@@ -1,0 +1,33 @@
+﻿<div class="row div-filters">
+    <div class="col-md-6 col-sm-12 col-lg-6">
+        <p>
+            <a href="#" class="btn btn-primary" role="button">{{ 'popular'| translate }}</a>
+            <a href="#" class="btn btn-default" role="button">{{ 'recent'| translate }}</a>
+        </p>
+    </div>
+    <div class="col-md-6 col-sm-12 col-lg-6 ">
+        <div class="pull-right">
+            <div class="input-group">
+                <input type="text" class="form-control" ng-model="search" placeholder="{{ 'searchplaceholder'| translate }}">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">{{ 'title'| translate }}</button>
+                </span>
+            </div><!-- /input-group -->
+        </div>
+    </div>
+</div>
+<div class="div-shelf" ng-controller="booksController">
+    <ul>
+        <li ng-animate="'animate'" ng-repeat="book in books | filter:search">
+            <a href="/app/#/book/33">
+            <img src="http://kidslibrary.writereader.com/books/{{book.bookid}}/contents/{{book.thumbnail}}" />
+            <div>
+                <div class="book-likes">
+                    <div><span>{{book.likes}}</span></div>
+                </div>
+            </div>
+            </a>
+        </li>
+
+    </ul>
+</div>

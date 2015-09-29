@@ -1,0 +1,190 @@
+﻿<!doctype html>
+<html lang="en" ng-app="kidslibrary">
+<head>
+    <meta charset="UTF-8">
+    <title>Kids Library</title>
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0-rc2/css/bootstrap.min.css" />
+    <link rel="stylesheet/less" type="text/css" href="style.css" />
+
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="header" ng-controller="headerController">
+            <div class="container">
+                <div class="col-sm-9 col-md-4 col-lg-4 div-logo" >
+                    <div class="logo" ng-click="logoClick()">
+                        <img src="http://kidslibrary.writereader.com/images/{{ 'logo'| translate }}"></div>
+                </div>
+
+                <div class="col-sm-3 col-md-6 col-lg-8">
+                    <div class="languages pull-right" ng-controller="languageController">
+                        <div class="btn-group">
+                            <button type="button" data-lang="de" ng-click="changeLanguage('de')" class="btn btn-denmark"> </button>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button" data-lang="en" ng-click="changeLanguage('en')" class="btn btn-us"></button>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button" data-lang="sw" ng-click="changeLanguage('sw')" class="btn btn-sweden"></button>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button" data-lang="uk" ng-click="changeLanguage('uk')" class="btn btn-uk"></button>
+                        </div>
+                        <div class="btn-group" role="group">
+                            <button type="button"  ng-click="showInfo()" class="btn btn-guide"></button> 
+                        </div>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fluid-content" >
+            <div class="container "> 
+                    <div ng-view class="ng-view"></div>
+            </div>
+        </div>
+
+        <footer class="fluid-footer">
+            <div class="container  ">
+                <div class="copyright  ">&nbsp;</div>
+
+            </div>
+        </footer>
+    </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="js/vendor/wowscript.js"></script>
+    <script src="js/vendor/turnjs.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0rc1/angular-route.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-translate/2.7.2/angular-translate.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-translate-loader-static-files/2.7.2/angular-translate-loader-static-files.js"></script>
+    <script src="js/vendor/boostrap-ui.min.js"></script>
+    <script src="less.js"></script>
+    <script>
+        (function () {
+            var kidslibrary = angular.module('kidslibrary', ['ngRoute', 'pascalprecht.translate', 'ui.bootstrap']);
+            kidslibrary.config(['$translateProvider', '$routeProvider', function ($translateProvider, $routeProvider) { 
+                $translateProvider.useStaticFilesLoader({
+                    prefix: '/app/languages/',
+                    suffix: '.json'
+                }); 
+                $translateProvider.preferredLanguage('de'); 
+                $routeProvider.when('/', {
+                    templateUrl: 'partials/books.html',
+                    controller: 'booksController'
+                }).
+                when('/book/:id', {
+                    templateUrl: 'partials/book.html',
+                    controller: 'bookController'
+                }).
+                otherwise({ redirectTo: '/' });
+            }]);
+
+
+            kidslibrary.controller('headerController', ['$scope', '$http', "$location",function ($scope, $http,$location) {
+                $scope.logoClick = function () {
+                    $location.path("/")
+                }
+            }]);
+            
+            kidslibrary.controller('booksController', ['$scope','$http', function ($scope,$http) {
+                var promise = $http.get("/app/books.js");
+                promise.then(function (data) { 
+                    $scope.books = data.data;
+                })
+            }]);
+            kidslibrary.controller('bookController', ['$scope', function ($scope) {
+                $scope.init = function () {
+                    var module = {
+                        ratio: 0.69,
+                        init: function (id) {
+                            var me = this;
+
+                            // if older browser then don't run javascript
+                            if (document.addEventListener) {
+                                this.el = document.getElementById(id);
+                                var size = this.resize();
+                                console.log(size);
+                                this.plugins();
+                                $(me.el).find('img').css({ 'width': size.width, 'height': size.height });
+                                // on window resize, update the plugin size
+                                window.addEventListener('resize', function (e) {
+                                    var size = me.resize();
+                                    $(me.el).find('img').css({ 'width': size.width, 'height': size.height });
+                                    $(me.el).turn('size', size.width, size.height);
+                                });
+                            }
+                        },
+                        resize: function () {
+                            // reset the width and height to the css defaults
+                            this.el.style.width = '';
+                            this.el.style.height = '';
+
+                            var width = this.el.clientWidth,
+                                height = Math.round(width / this.ratio),
+                                padded = Math.round(document.body.clientHeight * 0.9);
+
+                            // if the height is too big for the window, constrain it
+                            if (height > padded) {
+                                height = padded;
+                               width = Math.round(height * this.ratio);
+                            }
+
+                            // set the width and height matching the aspect ratio
+                            this.el.style.width = width + 'px';
+                            this.el.style.height = height + 'px';
+
+                            return {
+                                width: width,
+                                height: height
+                            };
+                        },
+                        plugins: function () {
+                            // run the plugin
+                            $(this.el).turn({
+                                display: "double" ,
+                                gradients: true,
+                                acceleration: true
+                            });
+                            // hide the body overflow
+                            document.body.className = 'hide-overflow';
+                        }
+                    };
+
+                    module.init('flipbook');
+                }
+                $scope.init();
+            }]); 
+            kidslibrary.controller('languageController', ['$translate', '$scope', '$modal', function ($translate, $scope, $modal) {
+                var $modalInstance;
+                $scope.showInfo = function () {
+                    $modalInstance=  $modal.open({
+                        templateUrl: 'partials/info.html',
+                        controller: 'infoController',
+                        size: 'mlgd',
+                        windowClass: 'large-modal',
+                    })
+
+                }
+                $scope.changeLanguage = function (lang) { 
+                    
+                    $translate.use(lang);  // sets lang to use
+                }
+            }]);
+            kidslibrary.controller('infoController',  function ($scope,   $modalInstance) {
+                $scope.closeInfo = function () { 
+                    $modalInstance.close();
+                };
+            } )
+             
+
+        })()
+
+    </script>
+</body>
+
+</html>
